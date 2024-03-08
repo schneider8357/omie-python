@@ -52,10 +52,10 @@ class EtaproListarRequest(OmieSchema):
 
 class VendConsultarRequest(OmieSchema):
     """Ref: https://app.omie.com.br/api/v1/geral/vendedores/#vendConsultarRequest"""
-    codigo: int
-    codInt: str
+    codigo: Optional[int] = None # Código do vendedor.
+    codInt: Optional[str] = None # Código de Integração do vendedor.
 
 class ProjConsultarRequest(OmieSchema):
     """Ref: https://app.omie.com.br/api/v1/geral/projetos/#projConsultarRequest"""
-    codigo: int	# Código do projeto.
-    codInt: str # Código de Integração do projeto.
+    codigo: Optional[int] = None # Código do projeto.
+    codInt: Optional[str] = None # Código de Integração do projeto.

@@ -46,6 +46,8 @@ class OmieClient:
     
     """
     def __init__(self, app_key: str, app_secret: str, prefix='https://app.omie.com.br/api/v1/', cache_ttl=60):
+        if app_key is None or app_secret is None:
+            raise OmieClientError("app_key e app_secret não podem ser None")
         self.app_key = app_key
         self.app_secret = app_secret
         self.prefix = prefix if prefix.endswith("/") else prefix + "/"
@@ -85,7 +87,6 @@ class OmieClient:
         if method.kind != omie.methods.GET:
             raise OmieClientError(f"O método {method} não é do tipo GET.")
         if isinstance(data, dict):
-            print(data, method.schema)
             data = method.schema(**data)
         elif not isinstance(data, OmieSchema):
             raise TypeError(f"Parametro `data` deve ser dict ou OmieSchema, não {type(data)}")
@@ -105,7 +106,7 @@ class OmieClient:
             return response
         resp_json = response.json()
         if 'faultstring' in resp_json or 'faultcode' in resp_json:
-            exc = OmieAPIError(f"Erro no omie: faultcode='{resp_json.get('faultcode')}' - faultstring='{resp_json.get('faultstring')}'")
+            exc = OmieAPIError(faultcode=resp_json.get('faultcode'), faultstring=resp_json.get('faultstring'))
             exc.json = resp_json
             raise exc
         return resp_json

@@ -14,7 +14,7 @@ api = omie.OmieClient(
     os.getenv('OMIE_APP_SECRET'),
 )
 
-def get_pedidos_entre(data_inicio: str, data_fim: str) -> list:
+def get_pedidos_entre(data_inicio: str, data_fim: str, codigo_etapa: str = None) -> list:
     pedidos = []
 
     res = api.get(omie.ListarEtapasPedido, {
@@ -22,7 +22,7 @@ def get_pedidos_entre(data_inicio: str, data_fim: str) -> list:
         "nRegPorPagina": 1,
         "dDtInicial": data_inicio,
         "dDtFinal": data_fim,
-        "cEtapa": 20,
+        "cEtapa": codigo_etapa,
     })
 
     total_pedidos = res["nTotRegistros"]
@@ -42,7 +42,7 @@ def get_pedidos_entre(data_inicio: str, data_fim: str) -> list:
             "nRegPorPagina": registros_por_pag,
             "dDtInicial": data_inicio,
             "dDtFinal": data_fim,
-            "cEtapa": 20,
+            "cEtapa": codigo_etapa,
         })
         for p in res["etapasPedido"]:
             pedidos.append({
@@ -56,17 +56,22 @@ def get_pedidos_entre(data_inicio: str, data_fim: str) -> list:
 
 def get_dados_completos_pedido(num_ped: int) -> dict:
     p = {}
-    dados_pedido = api.get(omie.ConsultarPedido, {"numero_pedido": num_ped})
+    try:
+        dados_pedido = api.get(omie.ConsultarPedido, {"numero_pedido": num_ped})
+    except omie.OmieAPIError as exc:
+        if exc.faultcode == "SOAP-ENV:Client-107":
+            print(f"WARN: Pulando pedido {p}, erro na API {exc.faultcode}")
+            return p
     if "pedido_venda_produto" not in dados_pedido:
         print(f"WARN: {num_ped} faltando 'pedido_venda_produto'")
-        return dados_pedido
+        return p
     if "total_pedido" in dados_pedido["pedido_venda_produto"]:
         p["valor_mercadorias"] = dados_pedido["pedido_venda_produto"]["total_pedido"].get("valor_mercadorias")
         if p["valor_mercadorias"] is None:
             print(f"WARN: {num_ped}: faltando 'valor_mercadorias'")
     if "informacoes_adicionais" not in dados_pedido["pedido_venda_produto"]:
         print(f"WARN: {num_ped} faltando 'informacoes_adicionais'")
-        return dados_pedido
+        return p
     infos_pedido = dados_pedido["pedido_venda_produto"]["informacoes_adicionais"]
     if "codVend" in infos_pedido:
         p["vendedor"] = api.get(omie.ConsultarVendedor, {"codigo": infos_pedido["codVend"]}).get("nome")
@@ -87,7 +92,7 @@ def get_dados_completos_pedido(num_ped: int) -> dict:
     return p
 
 
-pedidos_mes = get_pedidos_entre("01/03/2024","31/03/2024")
+pedidos_mes = get_pedidos_entre("07/03/2024","07/03/2024", codigo_etapa="20")
 
 pedidos_mes_completos = {}
 for p in pedidos_mes:
