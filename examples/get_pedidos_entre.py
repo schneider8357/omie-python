@@ -1,4 +1,5 @@
 import os
+import sys
 
 import pandas as pd
 from dotenv import load_dotenv
@@ -62,6 +63,10 @@ def get_dados_completos_pedido(num_ped: int) -> dict:
         if exc.faultcode == "SOAP-ENV:Client-107":
             print(f"WARN: Pulando pedido {p}, erro na API {exc.faultcode}")
             return p
+        else:
+            raise exc
+    except Exception as exc:
+        raise exc
     if "pedido_venda_produto" not in dados_pedido:
         print(f"WARN: {num_ped} faltando 'pedido_venda_produto'")
         return p
@@ -91,8 +96,10 @@ def get_dados_completos_pedido(num_ped: int) -> dict:
         print(f"WARN: {num_ped} faltando 'utilizar_emails'")
     return p
 
+data_inicio = sys.argv[1]
+data_fim = sys.argv[2] if len(sys.argv) >= 3 else data_inicio
 
-pedidos_mes = get_pedidos_entre("07/03/2024","07/03/2024", codigo_etapa="20")
+pedidos_mes = get_pedidos_entre(data_inicio, data_fim, codigo_etapa="20")
 
 pedidos_mes_completos = {}
 for p in pedidos_mes:
@@ -103,5 +110,7 @@ for p in pedidos_mes:
         print(f"ERROR: erro ao obter pedido {p}: {exc}")
 
 df = pd.DataFrame(pedidos_mes_completos.values())
-df.to_csv("pedidos_vendas_03_2024.csv")
+filename = f"pedidos_vendas_{data_inicio}_ate_{data_fim}.csv".replace("/", "_")
+print("arquivo gerado:", filename)
+df.to_csv(filename)
 
