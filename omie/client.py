@@ -35,15 +35,15 @@ class OmieClient:
     armazenados no seu código Python. Por gentileza, utilize a biblioteca
     `python-dotenv`, e em caso de dúvidas, confira os exemplos no diretório
     examples, como o `./examples/listar_etapas_pedido.py`.
-    
+
     Uso: api = OmieClient(app_key, app_secret)
-    
+
     `app_key` é a app_key do Omie
     `app_secret` é a app_secret do Omie
     `prefix` o prefixo das requests, padrão é "https://app.omie.com.br/api/v1/"
     `cache_ttl` é o tempo de cache das respostas da api, caso utilize
         use_cache=True em suas requests.
-    
+
     """
     def __init__(self, app_key: str, app_secret: str, prefix='https://app.omie.com.br/api/v1/', cache_ttl=60):
         if app_key is None or app_secret is None:
@@ -63,7 +63,7 @@ class OmieClient:
         headers = {"Content-type": "application/json"} if data else None
         return requests.request(method, url, data=data, headers=headers, allow_redirects=False)
 
-    def get(self, method: str | OmieMethod, data: dict | OmieSchema, use_cache=True, return_json=True):
+    def get(self, method: OmieMethod, data: OmieSchema, use_cache=True, return_json=True):
         """
         Pegar dados da Omie API.
         Ponto importante: apesar de o client PEGAR dados, é feito uma request POST.
