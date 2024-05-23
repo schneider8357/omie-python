@@ -10,7 +10,14 @@ class OmieMethod:
     kind: str
     name: str
     path: str
-    schema: dict
+    schema: schemas.OmieSchema
+    response_schema: schemas.OmieSchema
+
+class OmieListMethod(OmieMethod):
+    page_num_field = None
+    regs_per_page_field = None
+    resp_total_regs_field = None
+    resp_array_field = None
 
 class ConsultarPedido(OmieMethod):
     kind = GET
@@ -18,16 +25,39 @@ class ConsultarPedido(OmieMethod):
     path = "produtos/pedido"
     schema = schemas.PvpConsultarRequest
 
-class ListarEtapasPedido(OmieMethod):
+class StatusPedido(OmieMethod):
+    kind = GET
+    name = "StatusPedido"
+    path = "produtos/pedido"
+    schema = schemas.PvpStatusRequest
+
+class ListarPedidos(OmieListMethod):
+    kind = GET
+    name = "ListarPedidos"
+    path = "produtos/pedido"
+    page_num_field = "pagina"
+    regs_per_page_field = "registros_por_pagina"
+    schema = schemas.PvpListarRequest
+    response_schema = schemas.PvpListarResponse
+    resp_total_regs_field = "total_de_registros"
+    resp_array_field = "pedido_venda_produto"
+
+class ListarEtapasPedido(OmieListMethod):
     kind = GET
     name = "ListarEtapasPedido"
     path = "produtos/pedidoetapas"
+    page_num_field = "nPagina"
+    regs_per_page_field = "nRegPorPagina"
     schema = schemas.PEtapaListarRequest
+    resp_total_regs_field = "nTotRegistros"
+    resp_array_field = "etapasPedido"
 
-class ListarEtapasFaturamento(OmieMethod):
+class ListarEtapasFaturamento(OmieListMethod):
     kind = GET
     name = "ListarEtapasFaturamento"
     path = "produtos/etapafat"
+    page_num_field = "pagina"
+    regs_per_page_field = "registros_por_pagina"
     schema = schemas.EtaproListarRequest
 
 class ConsultarVendedor(OmieMethod):
@@ -41,6 +71,18 @@ class ConsultarProjeto(OmieMethod):
     name = "ConsultarProjeto"
     path = "geral/projetos"
     schema = schemas.ProjConsultarRequest
+
+
+class ListarOS(OmieListMethod):
+    kind = GET
+    name = "ListarOS"
+    path = "servicos/os"
+    page_num_field = "pagina"
+    regs_per_page_field = "registros_por_pagina"
+    schema = schemas.OsListarRequest
+    resp_total_regs_field = "total_de_registros"
+    resp_array_field = "osCadastro"
+
 
 # TODO add mais métodos
 ...

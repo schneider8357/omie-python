@@ -13,49 +13,37 @@ load_dotenv()
 api = omie.OmieClient(
     os.getenv('OMIE_APP_KEY'),
     os.getenv('OMIE_APP_SECRET'),
+    cache_ttl=300,
 )
 
 def get_pedidos_entre(data_inicio: str, data_fim: str, codigo_etapa: str = None) -> list:
     pedidos = []
 
-    res = api.get(omie.ListarEtapasPedido, {
-        "nPagina": 1,
-        "nRegPorPagina": 1,
+    res = api.get_all(omie.ListarEtapasPedido, {
         "dDtInicial": data_inicio,
         "dDtFinal": data_fim,
         "cEtapa": codigo_etapa,
     })
-
-    total_pedidos = res["nTotRegistros"]
-
-    print(f"foram encontrados {total_pedidos} pedidos")
-
-    registros_por_pag = 100
-    paginas = total_pedidos // registros_por_pag
-    if (total_pedidos % registros_por_pag):
-        paginas += 1
-
-    print(f"total de paginas: {paginas}")
-
-    for pag in range(paginas):
-        res = api.get(omie.ListarEtapasPedido, {
-            "nPagina": pag+1,
-            "nRegPorPagina": registros_por_pag,
-            "dDtInicial": data_inicio,
-            "dDtFinal": data_fim,
-            "cEtapa": codigo_etapa,
+    for p in res:
+        pedidos.append({
+            "numero_pedido": p["cNumero"],
+            "codigo_etapa": codigo_etapa,
+            "codigo_pedido": p["nCodPed"],
+            "data_inclusao": p.get("info", {}).get("dInc"),
+            "data_aprovacao_financeiro": p["dDtEtapa"],
         })
-        for p in res["etapasPedido"]:
-            pedidos.append({
-                "numero_pedido": p["cNumero"],
-                "codigo_pedido": p["nCodPed"],
-                "data_inclusao": p.get("info", {}).get("dInc"),
-                "data_aprovacao_financeiro": p["dDtEtapa"],
-            })
     return pedidos
 
+def get_dados_completos_item(item: dict):
+    return {
+        "codigo_item": item.get('ide').get('codigo_item'),
+        "codigo_produto": item["produto"]["codigo_produto"],
+        "cfop": item["produto"]["cfop"],
+        "descricao": item["produto"]["descricao"],
+        "valor_unitario": item["produto"]["valor_unitario"],
+    }
 
-def get_dados_completos_pedido(num_ped: int) -> dict:
+def get_dados_completos_pedido(num_ped: int, retornar_itens=False) -> dict:
     p = {}
     try:
         dados_pedido = api.get(omie.ConsultarPedido, {"numero_pedido": num_ped})
@@ -71,9 +59,9 @@ def get_dados_completos_pedido(num_ped: int) -> dict:
         print(f"WARN: {num_ped} faltando 'pedido_venda_produto'")
         return p
     if "total_pedido" in dados_pedido["pedido_venda_produto"]:
-        p["valor_mercadorias"] = dados_pedido["pedido_venda_produto"]["total_pedido"].get("valor_mercadorias")
-        if p["valor_mercadorias"] is None:
-            print(f"WARN: {num_ped}: faltando 'valor_mercadorias'")
+        p["valor_total_pedido"] = dados_pedido["pedido_venda_produto"]["total_pedido"].get("valor_total_pedido")
+        if p["valor_total_pedido"] is None:
+            print(f"WARN: {num_ped}: faltando 'valor_total_pedido'")
     if "informacoes_adicionais" not in dados_pedido["pedido_venda_produto"]:
         print(f"WARN: {num_ped} faltando 'informacoes_adicionais'")
         return p
@@ -94,23 +82,45 @@ def get_dados_completos_pedido(num_ped: int) -> dict:
         p["cliente_email"] = infos_pedido["utilizar_emails"]
     else:
         print(f"WARN: {num_ped} faltando 'utilizar_emails'")
+    if retornar_itens:
+        p["itens"] = [get_dados_completos_item(item) for item in dados_pedido["pedido_venda_produto"]["det"]]
     return p
 
-data_inicio = sys.argv[1]
-data_fim = sys.argv[2] if len(sys.argv) >= 3 else data_inicio
 
-pedidos_mes = get_pedidos_entre(data_inicio, data_fim, codigo_etapa="20")
 
-pedidos_mes_completos = {}
-for p in pedidos_mes:
-    try:
-        pedidos_mes_completos[p["numero_pedido"]] = p
-        pedidos_mes_completos[p["numero_pedido"]] |= get_dados_completos_pedido(p["numero_pedido"])
-    except Exception as exc:
-        print(f"ERROR: erro ao obter pedido {p}: {exc}")
+def report_pedidos_entre(data_inicio, data_fim=None, etapas=[], retornar_itens=False):
+    if data_fim == None:
+        data_fim = data_inicio
+    pedidos_mes = []
+    for codigo_etapa in etapas:
+        pedidos_mes += get_pedidos_entre(data_inicio, data_fim, codigo_etapa=codigo_etapa)
 
-df = pd.DataFrame(pedidos_mes_completos.values())
-filename = f"pedidos_vendas_{data_inicio}_ate_{data_fim}.csv".replace("/", "_")
-print("arquivo gerado:", filename)
-df.to_csv(filename)
+    pedidos_mes_completos = {}
+    for p in pedidos_mes:
+        try:
+            pedidos_mes_completos[p["numero_pedido"]] = p
+            pedidos_mes_completos[p["numero_pedido"]] |= get_dados_completos_pedido(p["numero_pedido"], retornar_itens=retornar_itens)
+        except omie.OmieAPIError as exc:
+            if exc.faultcode == "SOAP-ENV:Client-8020":
+                print(f"ERROR: Alguma coisa falhou na camada de cache. {p=}")
+                raise exc
+        except Exception as exc:
+            print(f"ERROR: erro ao obter pedido {p}: {exc}")
 
+    if retornar_itens:
+        itens_pedidos = []
+        for p in pedidos_mes_completos.values():
+            for item in p.get("itens", []):
+                itens_pedidos.append(p|item)
+        df = pd.DataFrame(itens_pedidos)
+        filename = f"itens_pedidos_vendas_{data_inicio}_ate_{data_fim}.csv".replace("/", "_")
+    else:
+        df = pd.DataFrame(pedidos_mes_completos.values())
+        filename = f"pedidos_vendas_{data_inicio}_ate_{data_fim}.csv".replace("/", "_")
+    df.to_csv(filename)
+    return filename
+
+if __name__ == "__main__":
+    data_inicio = sys.argv[1]
+    data_fim = sys.argv[2] if len(sys.argv) >= 3 else data_inicio
+    print("arquivo gerado:", report_pedidos_entre(data_inicio, data_fim=data_fim, retornar_itens=True, etapas=["20","50","60","70"]))

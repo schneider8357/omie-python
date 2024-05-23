@@ -66,3 +66,13 @@ O schema é uma forma de validar os dados que serão enviados para a Omie API.
 Para esta validação, a biblioteca pydantic é utilizada. Ela valida os tipos
 dos dados e exporta os modelos para JSON. Confira os exemplos em `omie/schemas.py`.
 
+## To dos
+
+- [ ] Get pedidos entre - possibilitar lista de etapas
+- [x] Get pedidos entre - retornar dados de cada pedido ou de cada item?
+- [ ] Logger
+
+
+## Erros
+SOAP-ENV:Client-8020: ocorre quando uma mesma request é tentada novamente rápido demais
+MISUSE_API_PROCESS: ocorre quando há tentativas demais de acesso
