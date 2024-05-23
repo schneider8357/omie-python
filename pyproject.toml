@@ -1,0 +1,35 @@
+[build-system]
+requires      = ["setuptools>=61.0.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "omie-python"
+version = "0.0.1"
+description = "Client for the Omie ERP API"
+readme = "README.md"
+authors = [{ name = "Lucas Schneider", email = "lucasschneider.dev@gmail.com" }]
+license = { file = "LICENSE" }
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+
+keywords = ["omie", "api", "client"]
+dependencies = [
+    "cachetools==5.3.3",
+    "openpyxl==3.1.2",
+    "pandas==2.2.2",
+    "pydantic==2.7.1",
+    "python-dotenv==1.0.1",
+    "requests==2.31.0",
+    "typer==0.12.3",
+]
+requires-python = ">=3.9"
+
+
+[project.urls]
+Homepage = "https://github.com/schneider8357/omie-python"
+
+[project.scripts]
+omie = "omie.__main__:main"
