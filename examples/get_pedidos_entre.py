@@ -1,3 +1,17 @@
+"""
+examples/get_pedidos_entre.py
+
+Uso:
+
+$ python3 examples/get_pedidos_entre.py 20/05/2024 22/05/2024
+
+arquivo gerado: itens_pedidos_vendas_20_05_2024_ate_22_05_2024.csv
+
+
+Obs.: O parâmetro retornar_itens=True denota que os dados de cada item
+dos pedidos serão retornados ao invés dos dados de cada pedido.
+O parâmetro etapas=["20","50","60","70"] define quais etapas serão buscadas.
+"""
 import os
 import sys
 

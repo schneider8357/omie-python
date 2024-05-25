@@ -77,12 +77,47 @@ class ListarOS(OmieListMethod):
     kind = GET
     name = "ListarOS"
     path = "servicos/os"
+    schema = schemas.OsListarRequest
     page_num_field = "pagina"
     regs_per_page_field = "registros_por_pagina"
-    schema = schemas.OsListarRequest
     resp_total_regs_field = "total_de_registros"
     resp_array_field = "osCadastro"
 
+class ConsultarCategoria(OmieMethod):
+    kind = GET
+    name = "ConsultarCategoria"
+    path = "geral/categorias"
+    schema = schemas.CategoriaConsultar
+
+class ListarCategorias(OmieListMethod):
+    kind = GET
+    name = "ListarCategorias"
+    path = "geral/categorias"
+    schema = schemas.CategoriaListRequest
+    page_num_field = "pagina"
+    regs_per_page_field = "registros_por_pagina"
+    resp_total_regs_field = "total_de_registros"
+    resp_array_field = "categoria_cadastro"
+
+class ListarContasPagar(OmieListMethod):
+    kind = GET
+    name = "ListarContasPagar"
+    path = "financas/contapagar"
+    schema = schemas.LcpListarRequest
+    page_num_field = "pagina"
+    regs_per_page_field = "registros_por_pagina"
+    resp_total_regs_field = "total_de_registros"
+    resp_array_field = "conta_pagar_cadastro"
+
+class ListarContasReceber(OmieListMethod):
+    kind = GET
+    name = "ListarContasReceber"
+    path = "financas/contareceber"
+    schema = schemas.LcrListarRequest
+    page_num_field = "pagina"
+    regs_per_page_field = "registros_por_pagina"
+    resp_total_regs_field = "total_de_registros"
+    resp_array_field = "conta_receber_cadastro"
 
 # TODO add mais métodos
 ...

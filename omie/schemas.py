@@ -168,3 +168,84 @@ class OsListarRequest(OmieSchema):
     cExibirDespesas: Optional[str] = None
     cExibirProdutos: Optional[str] = None
     cTipoFat: Optional[str] = None
+
+class CategoriaConsultar(OmieSchema):
+    codigo: str
+
+class CategoriaListRequest(OmieSchema):
+    pagina: Optional[int] = None
+    registros_por_pagina: Optional[int] = None
+    filtrar_apenas_ativo: Optional[str] = None
+    filtrar_por_tipo: Optional[str] = None
+
+class DadosDRE(OmieSchema):
+    codigoDRE: str
+    descricaoDRE: str
+    naoExibirDRE: str
+    nivelDRE: int
+    sinalDRE: str
+    totalizaDRE: str
+
+class CategoriaCadastro(OmieSchema):
+    codigo: str
+    descricao: str
+    descricao_padrao: str
+    conta_inativa: str
+    definida_pelo_usuario: str
+    id_conta_contabil: int
+    tag_conta_contabil: str
+    conta_despesa: str
+    nao_exibir: str
+    natureza: str
+    conta_receita: str
+    totalizadora: str
+    transferencia: str
+    codigo_dre: str
+    categoria_superior: str
+    dadosDRE: List[DadosDRE]
+
+class LcpListarRequest(OmieSchema):
+    pagina: Optional[int] = None
+    registros_por_pagina: Optional[int] = None
+    apenas_importado_api: Optional[str] = None
+    ordenar_por: Optional[str] = None
+    ordem_descrescente: Optional[str] = None
+    filtrar_por_data_de: Optional[str] = None
+    filtrar_por_data_ate: Optional[str] = None
+    filtrar_apenas_inclusao: Optional[str] = None
+    filtrar_apenas_alteracao: Optional[str] = None
+    filtrar_por_emissao_de: Optional[str] = None
+    filtrar_por_registro_de: Optional[str] = None
+    filtrar_por_emissao_ate: Optional[str] = None
+    filtrar_por_registro_ate: Optional[str] = None
+    filtrar_conta_corrente: Optional[int] = None
+    filtrar_cliente: Optional[int] = None
+    filtrar_por_cpf_cnpj: Optional[str] = None
+    filtrar_por_status: Optional[str] = None
+    filtrar_por_projeto: Optional[int] = None
+    filtrar_por_vendedor: Optional[int] = None
+    filtrar_apenas_titulos_em_aberto: Optional[str] = None
+    exibir_obs: Optional[str] = None
+
+class LcrListarRequest(OmieSchema):
+    pagina: Optional[int] = None
+    registros_por_pagina: Optional[int] = None
+    apenas_importado_api: Optional[str] = None
+    ordenar_por: Optional[str] = None
+    ordem_descrescente: Optional[str] = None
+    filtrar_por_data_de: Optional[str] = None
+    filtrar_por_data_ate: Optional[str] = None
+    filtrar_apenas_inclusao: Optional[str] = None
+    filtrar_apenas_alteracao: Optional[str] = None
+    filtrar_por_emissao_de: Optional[str] = None
+    filtrar_por_registro_de: Optional[str] = None
+    filtrar_por_emissao_ate: Optional[str] = None
+    filtrar_por_registro_ate: Optional[str] = None
+    filtrar_conta_corrente: Optional[int] = None
+    filtrar_apenas_titulos_em_aberto: Optional[str] = None
+    filtrar_cliente: Optional[int] = None
+    filtrar_por_status: Optional[str] = None
+    filtrar_por_cpf_cnpj: Optional[str] = None
+    filtrar_por_projeto: Optional[int] = None
+    filtrar_por_vendedor: Optional[int] = None
+    exibir_obs: Optional[str] = None
